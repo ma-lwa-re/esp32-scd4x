@@ -46,70 +46,79 @@
 #define SCD41_SENSOR_ADDR           (0x62)
 #define SCD41_READ_ERROR            (0xFFFF)
 #define SCD41_HEX_CODE_SIZE         (0x02)
-#define SLEEP_DELAY                 (1000 * 60 * 15)
-#define UPDATE_DELAY                (1000 * 15)
-#define INIT_DELAY                  (5000)
 
 #define CRC8_POLYNOMIAL             (0x31)
 #define CRC8_INIT                   (0xFF)
 
 #ifndef SCD4X_H
 #define SCD4X_H
-typedef struct sensors_values {
+typedef struct scd4x_msb_lsb {
+    uint8_t msb;
+    uint8_t lsb;
+} scd4x_msb_lsb_t;
+
+typedef struct scd4x_sensor_value {
+    scd4x_msb_lsb_t value;
+    uint8_t crc;
+} scd4x_sensor_value_t;
+
+typedef struct scd4x_sensors_values {
     uint16_t co2;
     float temperature;
     float humidity;
-} sensors_values_t;
+} scd4x_sensors_values_t;
 #endif
 
-uint8_t scd41_generate_crc(const uint8_t* data, uint16_t count);
+uint8_t scd4x_generate_crc(const uint8_t* data, uint16_t count);
 
-esp_err_t scd41_send_command(uint8_t *command);
+esp_err_t scd4x_send_command(uint8_t *command);
 
-esp_err_t scd41_read(uint8_t *hex_code, uint8_t *measurements, uint8_t size);
+esp_err_t scd4x_read(uint8_t *hex_code, uint8_t *measurements, uint8_t size);
 
-esp_err_t scd41_write(uint8_t *hex_code, uint8_t *measurements, uint8_t size);
+esp_err_t scd4x_write(uint8_t *hex_code, uint8_t *measurements, uint8_t size);
 
-esp_err_t start_periodic_measurement();
+esp_err_t scd4x_send_command_and_fetch_result(uint8_t *command, uint8_t *measurements, uint8_t size);
 
-esp_err_t read_measurement(sensors_values_t *sensors_values);
+esp_err_t scd4x_start_periodic_measurement();
 
-esp_err_t stop_periodic_measurement();
+esp_err_t scd4x_read_measurement(scd4x_sensors_values_t *sensors_values);
 
-esp_err_t set_temperature_offset(float temperature);
+esp_err_t scd4x_stop_periodic_measurement();
 
-float get_temperature_offset();
+esp_err_t scd4x_set_temperature_offset(float temperature);
 
-esp_err_t set_sensor_altitude(float altitude);
+float scd4x_get_temperature_offset();
 
-uint16_t get_sensor_altitude();
+esp_err_t scd4x_set_sensor_altitude(float altitude);
 
-esp_err_t set_ambient_pressure(uint32_t pressure);
+uint16_t scd4x_get_sensor_altitude();
 
-uint16_t perform_forced_recalibration(u_int16_t  co2_concentration);
+esp_err_t scd4x_set_ambient_pressure(uint32_t pressure);
 
-esp_err_t set_automatic_self_calibration_enabled(bool asc_enabled);
+uint16_t scd4x_perform_forced_recalibration(uint16_t co2_concentration);
 
-bool get_automatic_self_calibration_enabled();
+esp_err_t scd4x_set_automatic_self_calibration_enabled(bool asc_enabled);
 
-esp_err_t start_low_power_periodic_measurement();
+bool scd4x_get_automatic_self_calibration_enabled();
 
-bool get_data_ready_status();
+esp_err_t scd4x_start_low_power_periodic_measurement();
 
-esp_err_t persist_settings();
+bool scd4x_get_data_ready_status();
 
-uint64_t get_serial_number();
+esp_err_t scd4x_persist_settings();
 
-bool perform_self_test();
+uint64_t scd4x_get_serial_number();
 
-esp_err_t perfom_factory_reset();
+bool scd4x_perform_self_test();
 
-esp_err_t reinit();
+esp_err_t scd4x_perfom_factory_reset();
 
-esp_err_t measure_single_shot();
+esp_err_t scd4x_reinit();
 
-esp_err_t measure_single_shot_rht_only();
+esp_err_t scd4x_measure_single_shot();
 
-esp_err_t power_down();
+esp_err_t scd4x_measure_single_shot_rht_only();
 
-esp_err_t wake_up();
+esp_err_t scd4x_power_down();
+
+esp_err_t scd4x_wake_up();

@@ -60,13 +60,13 @@ void sensors_task(void *arg) {
     #endif
 
     vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-    ESP_LOGI(SENSORS_TAG, "Sensor serial number 0x%012llX", get_serial_number());
+    ESP_LOGI(SENSORS_TAG, "Sensor serial number 0x%012llX", scd4x_get_serial_number());
 
     vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-    float temperature_offset = get_temperature_offset();
+    float temperature_offset = scd4x_get_temperature_offset();
 
     vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-    uint16_t sensor_altitude = get_sensor_altitude();
+    uint16_t sensor_altitude = scd4x_get_sensor_altitude();
 
     if(temperature_offset != SCD41_READ_ERROR && sensor_altitude != SCD41_READ_ERROR) {
 
@@ -75,13 +75,13 @@ void sensors_task(void *arg) {
                      temperature_offset, scale, TEMPERATURE_OFFSET, scale);
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            ESP_ERROR_CHECK_WITHOUT_ABORT(set_temperature_offset(TEMPERATURE_OFFSET));
+            ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_set_temperature_offset(TEMPERATURE_OFFSET));
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            ESP_ERROR_CHECK_WITHOUT_ABORT(persist_settings());
+            ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_persist_settings());
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            temperature_offset = get_temperature_offset();
+            temperature_offset = scd4x_get_temperature_offset();
         }
 
         if(sensor_altitude != SENSOR_ALTITUDE) {
@@ -89,13 +89,13 @@ void sensors_task(void *arg) {
                      sensor_altitude, SENSOR_ALTITUDE);
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            ESP_ERROR_CHECK_WITHOUT_ABORT(set_sensor_altitude(SENSOR_ALTITUDE));
+            ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_set_sensor_altitude(SENSOR_ALTITUDE));
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            ESP_ERROR_CHECK_WITHOUT_ABORT(persist_settings());
+            ESP_ERROR_CHECK_WITHOUT_ABORT(scd4x_persist_settings());
 
             vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
-            sensor_altitude = get_sensor_altitude();
+            sensor_altitude = scd4x_get_sensor_altitude();
         }
         ESP_LOGI(SENSORS_TAG, "Temperature offset %.1f °%c - Sensor altitude %d %s",
                  temperature_offset, scale, sensor_altitude, scale == SCALE_CELCIUS ? "m" : "ft");
@@ -106,16 +106,16 @@ void sensors_task(void *arg) {
     vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
 
     for(;;) {
-        start_periodic_measurement();
+        scd4x_start_periodic_measurement();
 
-        sensors_values_t sensors_values = {
+        scd4x_sensors_values_t sensors_values = {
             .co2 = 0x00,
             .temperature = 0x00,
             .humidity = 0x00
         };
         vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
 
-        if(read_measurement(&sensors_values) != ESP_OK) {
+        if(scd4x_read_measurement(&sensors_values) != ESP_OK) {
             ESP_LOGE(SENSORS_TAG, "Sensors read measurement error!");
         }
         vTaskDelay(INIT_DELAY / portTICK_PERIOD_MS);
@@ -132,7 +132,7 @@ void sensors_task(void *arg) {
 
         ESP_LOG_BUFFER_HEX_LEVEL(SENSORS_TAG, &sensors_values, sizeof(sensors_values), ESP_LOG_DEBUG);
 
-        stop_periodic_measurement();
+        scd4x_stop_periodic_measurement();
 
         ESP_LOGI(SENSORS_TAG, "CO₂ %4.0f ppm - Temperature %2.1f °%c - Humidity %2.1f%%",
                  co2_level, temperature, scale, humidity);

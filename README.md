@@ -14,7 +14,7 @@ Edit the [`scd4x.h`](scd4x.h) header to select the GPIO used for the I2C interfa
 #### Example
 The [`main.c`](main.c) file is an example of how you could use the SCD4x sensor family with an ESP32 microcontroller.
 
-Configure the I2C interface and install
+Configure the I2C interface by setting the SDA and SCL GPIO, as well as buffer size and other optional settings.
 
 ```
 i2c_config_t i2c_config = {
@@ -37,15 +37,15 @@ The typical communication sequence between the I2C master (e.g., an ESP32 microc
 4. To put the sensor back to idle mode, the I2C master sends a stop periodic measurement command.
 
 ```
-start_periodic_measurement();
+scd4x_start_periodic_measurement();
 
-sensors_values_t sensors_values = {
+scd4x_sensors_values_t sensors_values = {
     .co2 = 0x00,
     .temperature = 0x00,
     .humidity = 0x00
 };
 
-if(read_measurement(&sensors_values) != ESP_OK) {
+if(scd4x_read_measurement(&sensors_values) != ESP_OK) {
     ESP_LOGE(SENSORS_TAG, "Sensors read measurement error!");
 }
 
@@ -53,5 +53,5 @@ float co2_level = sensors_values.co2;
 float temperature = sensors_values.temperature;
 float humidity = sensors_values.humidity;
 
-stop_periodic_measurement();
+scd4x_stop_periodic_measurement();
 ```
